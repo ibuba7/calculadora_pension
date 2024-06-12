@@ -1,0 +1,212 @@
+{% extends 'calculator/base.html' %}
+{% load static %}
+{% block content %}
+
+<!-- ========================= SECTION MAIN ========================= -->
+<section class="section-intro padding-y-sm">
+    <div class="container">
+    </div> <!-- container //  -->
+</section>
+
+<!-- ========================= SECTION MAIN END// ========================= -->
+
+<!-- ========================= SECTION  ========================= -->
+<section class="section-name padding-y-sm">
+    <div class="container">
+        <header class="section-heading">
+            <h3 class="section-title">Bienvenido</h3>
+        </header><!-- sect-heading -->
+        <p>Bienvenido a tu calculadora de pensión. Si cotizas al IMSS y te registraste después del 1° de Julio de 1997, perteneces a la denomindada "Ley 97" y te vas a retirar con lo que ahorres en tu cuenta individual de la Afore en la que estés. Si no sabes a qué Afore perteneces puedes consultarlo <a href="https://www.aforeweb.com.mx/localiza-tu-afore">Aquí.</a></p>
+        <br>
+        <p>Los nombres de los saldos deben aparecer muy parecidos en tu estado de cuenta, si tienes dudas acércate con algún asesor de tu Afore.</p>
+        <br>
+        <p>Si no conoces las semanas cotizadas que tienes ante el IMSS las puedes consultar <a href="https://serviciosdigitales.imss.gob.mx/semanascotizadas-web/usuarios/IngresoAsegurado">Aquí.</a></p>
+        <br>
+        <header class="section-heading">
+            <h3 class="section-title">Introduce tus datos</h3>
+        </header><!-- sect-heading -->
+
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-5 custom-margin">
+                    <form method="post" action="{% url 'result' %}">
+                        {% csrf_token %}
+                        <div class="row">
+                            <!-- Left side inputs -->
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="fecha_nacimiento">Fecha de Nacimiento</label>
+                                    <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="salario_base">Salario Base</label>
+                                    <input type="text" id="salario_base" name="salario_base" class="form-control money-format" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="imss_1997">IMSS 1997</label>
+                                    <input type="text" id="imss_1997" name="imss_1997" class="form-control money-format" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="cuota_social">Cuota Social</label>
+                                    <input type="text" id="cuota_social" name="cuota_social" class="form-control money-format" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="saldo_aportaciones_voluntarias">Saldo de Aportaciones Voluntarias
+                                    </label>
+                                    <input type="text" id="saldo_aportaciones_voluntarias" name="saldo_aportaciones_voluntarias" class="form-control money-format empty-format">
+                                </div>
+                                <div class="form-group">
+                                    <label for="aportaciones_voluntarias_mensuales">Aportaciones voluntarias mensuales
+                                        <span class="tooltip-icon" data-tooltip="Las aportaciones voluntarias mensuales son los pagos adicionales mensuales que pretendes hacer para aumentar el saldo para retiro.">?</span>
+                                    </label>
+                                    <input type="text" id="aportaciones_voluntarias_mensuales" name="aportaciones_voluntarias_mensuales" class="form-control money-format empty-format">
+                                </div>
+                            </div>
+                        </div>
+                </div>
+
+                <!-- Right side inputs -->
+                <div class="col-md-5">
+                    <div class="form-group">
+                        <label for="sexo">Sexo</label>
+                        <select id="sexo" name="sexo" class="form-control" required>
+                            <option value="M">Masculino</option>
+                            <option value="F">Femenino</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="semanas_cotizadas">Semanas Cotizadas</label>
+                        <input type="text" id="semanas_cotizadas" name="semanas_cotizadas" class="form-control weeks-format" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cesantia_vejez">Cesantía en Edad Avanzada y Vejez</label>
+                        <input type="text" id="cesantia_vejez" name="cesantia_vejez" class="form-control money-format" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="infonavit_1997">INFONAVIT 1997</label>
+                        <input type="text" id="infonavit_1997" name="infonavit_1997" class="form-control money-format empty-format">
+                    </div>
+                    <div class="form-group">
+                        <label for="formalidad">Formalidad
+                            <span class="tooltip-icon" data-tooltip="La formalidad es el porcentaje de tiempo futuro que crees que podrás cotizar. Considera que en trabajos informales o por honorarios no cotizas al IMSS.">?</span>
+                        </label>
+                        <select id="formalidad" name="formalidad" class="form-control" required>
+                            <option value="50%">50%</option>
+                            <option value="60%">60%</option>
+                            <option value="70%">70%</option>
+                            <option value="80%">80%</option>
+                            <option value="90%">90%</option>
+                            <option value="100%">100%</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="afore">Afore</label>
+                        <select id="afore" name="afore" class="form-control" required>
+                            <option value="Azteca">Azteca</option>
+                            <option value="Citibanamex">Citibanamex</option>
+                            <option value="Coppel">Coppel</option>
+                            <option value="Inbursa">Inbursa</option>
+                            <option value="Invercap">Invercap</option>
+                            <option value="Pensionissste">Pensionissste</option>
+                            <option value="Principal">Principal</option>
+                            <option value="Profuturo">Profuturo</option>
+                            <option value="SURA">SURA</option>
+                            <option value="XXI Banorte">XXI Banorte</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="text-center col-md-12">
+                    <button type="submit" class="btn btn-primary mt-2 mb-5">Estima tu pensión</button>
+                </div>
+                </form>
+            </div>
+        </div>
+    </div><!-- container // -->
+</section>
+<!-- ========================= SECTION END// ========================= -->
+
+<script>
+    // Function to format number as currency with up to 2 decimal places
+    function formatAsCurrency(value) {
+        if (value === '') return '';
+        return '$' + value.replace(/(?!\.)\D/g, "")
+                          .replace(/(?<=\..*)\./g, "")
+                          .replace(/(?<=\.\d\d).*/g, "")
+                          .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+    }
+
+    // Function to format weeks as comma-separated integer up to 4 digits
+    function formatAsWeeks(value) {
+        if (value === '') return '';
+
+        value = value.replace(/\D/g, ''); // Remove non-numeric characters
+        value = value.substring(0, 4); // Limit to 4 digits
+        return value.replace(/\B(?=(\d{3})+(?!\d))/g, ","); // Add commas
+    }
+
+    // Add event listener to all elements with class 'money-format'
+    document.querySelectorAll('.money-format').forEach(function (element) {
+        element.addEventListener('input', function (event) {
+            let value = event.target.value;
+            event.target.value = formatAsCurrency(value);
+        });
+    });
+
+    // Add event listener to all elements with class 'weeks-format'
+    document.querySelectorAll('.weeks-format').forEach(function (element) {
+        element.addEventListener('input', function (event) {
+            let value = event.target.value;
+            event.target.value = formatAsWeeks(value);
+        });
+    });
+
+    // Add event listener to the form
+    document.querySelector('form').addEventListener('submit', function(event) {
+        event.preventDefault();  // Prevent the form from submitting immediately
+
+        // Clear previous error messages
+        document.querySelectorAll('.error-message').forEach(function (element) {
+            element.remove();
+        });
+
+        let formIsValid = true;
+        let formData = new FormData(event.target);
+
+        formData.forEach((value, key) => {
+            let inputElement = document.getElementById(key);
+            if (value.trim() === '') {
+                formIsValid = false;
+                let errorMessage = document.createElement('div');
+                errorMessage.classList.add('error-message');
+                errorMessage.style.color = 'red';
+                errorMessage.textContent = `El campo ${inputElement.previousElementSibling.textContent} es requerido.`;
+                inputElement.parentNode.appendChild(errorMessage);
+            }
+            if (key === 'salario_base' && parseFloat(value.replace(/[^0-9.-]+/g, "")) <= 0) {
+                formIsValid = false;
+                let errorMessage = document.createElement('div');
+                errorMessage.classList.add('error-message');
+                errorMessage.style.color = 'red';
+                errorMessage.textContent = 'El Salario Base no puede ser cero';
+                inputElement.parentNode.appendChild(errorMessage);
+            }
+        });
+
+        if (formIsValid) {
+            event.target.submit();  // Submit the form if all fields are valid
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.empty-format').forEach(function (element) {
+            if (element.value === '') {
+                element.value = formatAsCurrency('0.00');
+            }
+        });
+    });
+
+
+
+</script>
+
+{% endblock %}

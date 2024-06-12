@@ -1,0 +1,204 @@
+{% extends 'calculator/base.html' %}
+{% load static %}
+{% load filters %}
+{% block content %}
+
+<!-- ========================= SECTION MAIN ========================= -->
+<section class="section-intro padding-y-sm">
+    <div class="container">
+    </div> <!-- container //  -->
+</section>
+
+<!-- ========================= SECTION MAIN END// ========================= -->
+
+<!-- ========================= SECTION  ========================= -->
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Results</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            text-align: center;
+            vertical-align: middle;
+            padding: 8px;
+            border: 1px solid #dddddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .centered-title {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .table-container {
+            padding-right: 15px; /* Add padding to the right of the table */
+        }
+        .img-container {
+            width: 100%;
+            height: 100%; /* Set a fixed height */
+            overflow: hidden; /* Hide any overflow */
+        }
+        .img-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Scale the image while maintaining aspect ratio */
+        }
+        .red-background {
+            background-color: red;
+            font-weight: bold;
+            color: white;
+        }
+        .yellow-background {
+            background-color: yellow;
+            font-weight: bold;
+        }
+        .legend-container {
+            margin-top: 20px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+        }
+        .legend-color-box {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+        }
+        .highlight {
+            font-size: larger;
+            font-weight: bold;
+        }
+        @media print {
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Cómo crece tu saldo</h1>
+        <div class="col-md-6">
+            <img src="{% static 'calculator/crec_saldos.png' %}" alt="Plot">
+        </div>
+        <p>
+            El saldo que acumularás a los 65 años es de: <span class="highlight">{{ extra_data.Saldo_Total|currency }}</span>. 
+            {% if extra_data.Indicador_AV == 1 %}
+            Y si consideramos el saldo de aportaciones voluntarias que tienes y las aportaciones mensuales que harás será de: <span class="highlight">{{ extra_data.Saldo_Total_AV|currency }}</span>.
+            {% endif %}
+        </p>
+        <br> <br>
+        <p>Con esos saldos estos son los niveles de pensión que alcanzarás si decides retirate a las diferentes edades:</p>
+    <br> <br>
+    </div>
+    <div class="container">
+        <div class="row">
+            <!-- Left column for the table -->
+            <div class="col-md-6 table-container">
+                <h2 class="centered-title">Pensiones y tasas de reemplazo</h2>
+                <table class="table table-bordered table-centered">
+                    <thead>
+                        <tr>
+                            <th>Edad de Retiro</th>
+                            <th>Pensión</th>
+                            <th>Tasa de Reemplazo</th>
+                            <th>Pensión con AV</th>
+                            <th>Tasa de Reemplazo con AV</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in data %}
+                            <tr>
+                                <td>{{ row.Edad }}</td>
+                                <td class="{% if row.Negativa_de_Pensión == '1' %}red-background{% elif row.Pensión_Garantizada == '1' %}yellow-background{% endif %}">
+                                    {{ row.Pensión|currency }}
+                                </td>
+                                <td>{{ row.Tasa_de_Reemplazo|percentage }}</td>
+                                <td>{{ row.Pensión_con_AV|currency }}</td>
+                                <td>{{ row.Tasa_de_Reemplazo_con_AV|percentage }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="legend-container">
+                    {% if show_red_legend %}
+                    <div class="legend-item">
+                        <div class="legend-color-box" style="background-color: red;"></div>
+                        <span>Con estos datos recibirías una negatva de pensión. El valor mostrado es un supuesto de una pensión asumiendo que podrías comprarla tú mismo con los recursos que se te entregan. El monto puede variar.</span>
+                    </div>
+                    {% endif %}
+                    {% if show_yellow_legend %}
+                    <div class="legend-item">
+                        <div class="legend-color-box" style="background-color: yellow;"></div>
+                        <span>La pensión mostrada corresponde a una pensión garantizada</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            <!-- Right column for the plot -->
+            <div class="col-md-6 img-container">
+                <img src="{% static 'calculator/pensiones.png' %}" alt="Plot" class="img-fluid">
+            </div>
+        </div>
+    </div>
+    <br>
+    <div class="container text-center no-print">
+        <button id="generate-pdf" class="btn btn-primary">Genera PDF</button>
+    </div>
+    <br><br>
+    <script>
+        document.getElementById('generate-pdf').addEventListener('click', function () {
+            const { jsPDF } = window.jspdf;
+            console.log("Button clicked!");
+
+            // Get the elements to hide
+            const elementsToHide = document.querySelectorAll('.no-print, .navbar, .section-header, .section-footer, footer');
+
+            // Hide the elements
+            elementsToHide.forEach(element => element.style.display = 'none');
+
+            // Get the body element
+            const body = document.body;
+
+            // Set the canvas dimensions to fit A4 size
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+
+            // Use html2canvas to capture the content as an image
+            html2canvas(body, { scale: 2, width: body.scrollWidth, height: body.scrollHeight }).then(canvas => {
+                console.log("Canvas created!");
+                const imgData = canvas.toDataURL('image/png');
+
+                // Calculate the dimensions of the image
+                const imgWidth = pdfWidth;
+                const imgHeight = canvas.height * pdfWidth / canvas.width;
+
+                // Add the image to the PDF
+                pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+
+                // Save the PDF
+                pdf.save('results.pdf');
+                console.log("PDF generated and downloaded!");
+
+                // Restore the visibility of the elements
+                elementsToHide.forEach(element => element.style.display = '');
+            }).catch(error => {
+                console.error("Error generating PDF:", error);
+
+                // Restore the visibility of the elements in case of error
+                elementsToHide.forEach(element => element.style.display = '');
+            });
+        });
+    </script>
+</body>
+</html>
+
+{% endblock %}
